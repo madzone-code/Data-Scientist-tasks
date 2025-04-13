@@ -1,23 +1,12 @@
-import os
-import shutil
-
 from moviepy import AudioFileClip
+import os
 import librosa
 import noisereduce as nr
+import shutil
 import soundfile as sf
 import speech_recognition as sr
 import subprocess
 import whisper
-
-
-def whisper_transcribe_audio(wav_path):
-    """
-    Используем нейросетевую модель от OpenAI. Доступны модели tiny, base,
-    small, medium, large. Использует ffmpeg (должен быть установлен в ОС).
-    """
-    model = whisper.load_model("small")
-    result = model.transcribe(wav_path, language="ru")
-    return result["text"]
 
 
 def convertation(audio_path):
@@ -36,23 +25,6 @@ def convertation(audio_path):
 
     print('Файл успешно конвертирован.')
     return wav_path
-
-
-def transcribe_audio(audio_path):
-    """Локальное распознавание. Не требует ffmpeg."""
-    recognizer = sr.Recognizer()
-
-    print('Подождите, идет распознавание файла.')
-
-    try:
-        with sr.AudioFile(audio_path) as source:
-            audio = recognizer.record(source)
-            text = recognizer.recognize_google(audio, language="ru-RU")
-            return text
-    except sr.UnknownValueError:
-        return "Не удалось распознать речь"
-    except sr.RequestError as e:
-        return f"Ошибка сервиса: {e}"
 
 
 def enhance_audio(audio_path):
@@ -78,7 +50,8 @@ def advance_enhance_audio(wav_path):
 
     """
     # Выходной файл
-    advance_enhanced_path = os.path.splitext(wav_path)[0] + '_advance_enhance.wav'
+    advance_enhanced_path = (
+        os.path.splitext(wav_path)[0] + '_advance_enhance.wav')
     # Загрузка аудио
     audio, sample_rate = librosa.load(wav_path, sr=16000)  # 16 кГц для Whisper
     # Легкое подавление шума
@@ -107,9 +80,36 @@ def advance_enhance_audio(wav_path):
     return advance_enhanced_path
 
 
+def transcribe_audio(audio_path):
+    """Локальное распознавание. Не требует ffmpeg."""
+    recognizer = sr.Recognizer()
+
+    print('Подождите, идет распознавание файла.')
+
+    try:
+        with sr.AudioFile(audio_path) as source:
+            audio = recognizer.record(source)
+            text = recognizer.recognize_google(audio, language="ru-RU")
+            return text
+    except sr.UnknownValueError:
+        return "Не удалось распознать речь"
+    except sr.RequestError as e:
+        return f"Ошибка сервиса: {e}"
+
+
+def whisper_transcribe_audio(wav_path):
+    """
+    Используем нейросетевую модель от OpenAI. Доступны модели tiny, base,
+    small, medium, large. Использует ffmpeg (должен быть установлен в ОС).
+    """
+    model = whisper.load_model("base")
+    result = model.transcribe(wav_path, language="ru")
+    return result["text"]
+
+
 def main():
     # Задаем путь к обрабатываемому аудио файлу.
-    audio_path = "data/download_14.mp4"
+    audio_path = "task1/data/download_16.mp4"
 
     # Конвертируем в wav.
     wav_path = convertation(audio_path)
